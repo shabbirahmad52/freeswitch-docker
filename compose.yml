@@ -1,0 +1,36 @@
+services:
+  freeswitch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: freeswitch-1.10.10:latest
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.hostname == docker01
+    volumes:
+      - etcfreeswitch:/usr/local/freeswitch
+    ports:
+      - "5060:5060/udp"
+      - "5080:5080/udp"
+      - "8021:8021/tcp"
+      - "7443:7443/tcp"
+    healthcheck:
+      test: ["CMD-SHELL", "fs_cli -x status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  freeswitch-network:
+
+volumes:
+  etcfreeswitch:
+
